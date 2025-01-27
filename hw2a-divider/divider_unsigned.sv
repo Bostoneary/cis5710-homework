@@ -39,8 +39,12 @@ module divu_1iter (
         dividend = dividend << 1;
     }
     */
+    logic [31:0] remainder_cmp;
 
     // TODO: your code here
-    
+    assign remainder_cmp=(i_remainder<<1)|((i_dividend>>31)&32'b1);
+    assign o_remainder=(remainder_cmp>=i_divisor)?(remainder_cmp-i_divisor):remainder_cmp;
+    assign o_quotient=(remainder_cmp>=i_divisor)?((i_quotient<<1)&32'b1):(i_quotient<<1);
+    assign o_dividend=i_dividend<<1;
 
 endmodule
