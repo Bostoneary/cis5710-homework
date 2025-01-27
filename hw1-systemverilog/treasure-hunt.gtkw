@@ -1,0 +1,28 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Tue Jan 21 18:18:26 2025
+[*]
+[dumpfile] "C:\Users\bubuc\Documents\cis5710-homework\hw1-systemverilog\treasure-hunt.fst"
+[dumpfile_mtime] "Wed Jan 15 22:57:32 2025"
+[dumpfile_size] 6100
+[savefile] "C:\Users\bubuc\Documents\cis5710-homework\hw1-systemverilog\treasure-hunt.gtkw"
+[timestart] 0
+[size] 1368 849
+[pos] -252 -165
+*-12.962174 123 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 197
+[signals_width] 126
+[sst_expanded] 1
+[sst_vpaned_height] 240
+@28
+$rootio.clk
+@22
+top.b0_out[15:0]
+top.b1_out[15:0]
+top.b3_out[15:0]
+@28
+top.clk
+@23
+top.b4_out[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
