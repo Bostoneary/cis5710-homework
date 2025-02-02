@@ -212,14 +212,19 @@ module DatapathSingleCycle (
   // TODO: you will need to edit the port connections, however.
   wire [`REG_SIZE] rs1_data;
   wire [`REG_SIZE] rs2_data;
+  logic we;
+  logic [4:0]rd;
+  logic [`REG_SIZE]rd_data;
+  logic [4:0]rs1;
+  logic [4:0]rs2;
   RegFile rf (
     .clk(clk),
     .rst(rst),
-    .we(1'b0),
-    .rd(0),
-    .rd_data(0),
-    .rs1(0),
-    .rs2(0),
+    .we(we),
+    .rd(rd),
+    .rd_data(rd_data),
+    .rs1(rs1),
+    .rs2(rs2),
     .rs1_data(rs1_data),
     .rs2_data(rs2_data));
 
@@ -231,6 +236,9 @@ module DatapathSingleCycle (
     case (insn_opcode)
       OpLui: begin
         // TODO: start here by implementing lui
+        we=1'b1;
+        rd=insn_rd;
+        rd_data=insn_from_imem[31:12]<<12;
       end
       default: begin
         illegal_insn = 1'b1;
