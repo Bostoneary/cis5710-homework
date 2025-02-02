@@ -16,7 +16,7 @@ __check_defined = \
 #$(call check_defined, SV_SYNTH_SOURCES VERILOG_SYNTH_SOURCE, Each homework Makefile should define this)
 
 ifdef SV_SYNTH_SOURCES
-$(call check_defined, SV_SYNTH_SOURCES VERILOG_SYNTH_SOURCE TOP_MODULE_DEMO TOP_MODULE_RESOURCE_CHECK CONSTRAINTS, Each homework with a demo should define this in Makefile)
+$(call check_defined, SV_SYNTH_SOURCES VERILOG_SYNTH_SOURCE TOP_MODULE_RESOURCE_CHECK CONSTRAINTS, Each homework with a demo should define this in Makefile)
 endif
 
 ifdef ZIP_SOURCES
@@ -41,10 +41,13 @@ codecheck:
 
 test:
 	@echo You can run just specific tests via:
-	@echo "     MAKEFLAGS=-j4 pytest --exitfirst --capture=no testbench.py --tests TEST1,TEST2,..."
+	@echo "     MAKEFLAGS=-j4 pytest --exitfirst --capture=no -k runCocotbTests_ADD_TEST_COLLECTION_HERE testbench.py --tests TEST1,TEST2,..."
 	MAKEFLAGS=-j4 pytest --capture=no --exitfirst testbench.py
 
 demo:
+	$(MAKE) synth-yosys-fast pnr-fast TOP_MODULE=$(TOP_MODULE_DEMO)
+
+demo-slow:
 	$(MAKE) synth-yosys pnr TOP_MODULE=$(TOP_MODULE_DEMO)
 
 resource-check:
@@ -55,11 +58,6 @@ check-logs:
 
 $(VERILOG_SYNTH_SOURCE): $(SV_SYNTH_SOURCES) clock-gen
 	sv2v -DSYNTHESIS $(SV_SYNTH_SOURCES) --write=$(VERILOG_SYNTH_SOURCE) --top=$(TOP_MODULE) --incdir=`pwd`
-
-# NB: synlig miscompiles our code...
-#synth-synlig: verilog $(SYNTH_SOURCES) clock-gen
-#	mkdir -p $(BACKEND_OUTPUT_DIR)
-#	bash -c "set -o pipefail; $(time) synlig -p \"systemverilog_defines -DSYNTHESIS; read_systemverilog $(SYNTH_SOURCES); synth_ecp5 -top $(TOP_MODULE); write_json $(BACKEND_OUTPUT_DIR)/$(TOP_MODULE)-netlist.json\" 2>&1 | tee $(BACKEND_OUTPUT_DIR)/synth.log"
 
 synth: synth-yosys
 
