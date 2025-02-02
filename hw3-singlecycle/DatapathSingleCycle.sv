@@ -228,6 +228,17 @@ module DatapathSingleCycle (
     .rs1_data(rs1_data),
     .rs2_data(rs2_data));
 
+  logic [31:0]a;
+  logic [31:0]b;
+  logic cin;
+  logic [31:0]sum;
+  cla cla(
+    .a(a),
+    .b(b),
+    .cin(cin),
+    .sum(sum)
+  );
+
   logic illegal_insn;
 
   always_comb begin
@@ -239,8 +250,67 @@ module DatapathSingleCycle (
         we=1'b1;
         rd=insn_rd;
         rd_data=insn_from_imem[31:12]<<12;
+        pcNext=pcCurrent+4;
+      end
+      OpRegImm:
+      begin
+        if(insn_addi)
+        begin
+          b=imm_i_sext;
+          rs1=insn_rs1;
+          a=rs1_data;
+          cin=1'b0;
+          rd=insn_rd;
+          rd_data=sum;
+          pcNext=pcCurrent+4;
+        end
+      end
+      OpBranch:
+      begin
+        if(insn_beq)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data==rs2_data)
+          begin
+            pcNext=pcCurrent+(imm_b_sext<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+        else if(insn_bne)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data!=rs2_data)
+          begin
+            pcNext=pcCurrent+(imm_b_sext<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+      end
+      OpRegReg:
+      begin
+        if(insn_add)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          a=rs1_data;
+          b=rs2_data;
+          cin=1'b0;
+          we=1'b1;
+          rd=insn_rd;
+          rd_data=sum;
+          pcNext=pcCurrent+4;
+        end
       end
       default: begin
+        rs1=0;
         illegal_insn = 1'b1;
       end
     endcase
