@@ -294,7 +294,7 @@ module DatapathSingleCycle (
           end
         end
       end
-      OpRegReg:
+      OpEnviron:
       begin
         if(insn_add)
         begin
