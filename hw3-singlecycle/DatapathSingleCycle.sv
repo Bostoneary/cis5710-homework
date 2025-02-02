@@ -25,6 +25,28 @@ module RegFile (
   logic [`REG_SIZE] regs[NumRegs];
 
   // TODO: your code here
+  assign regs[0]=32'd0; //  x0 is always zero
+  assign rs1_data=regs[rs1];  //  1st read port
+  assign rs2_data=regs[rs2];  //  2nd read port
+  genvar i;
+  for(i=1;i<32;i++)
+  begin
+    always_ff @(posedge clk)
+    begin
+      if(rst)
+      begin
+        regs[i]<=32'd0;
+      end
+      else
+      begin
+        if(we && rd==i)
+        begin
+          regs[i]<=rd_data;
+        end
+      end
+    end
+  end
+
 
 endmodule
 
