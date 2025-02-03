@@ -91,9 +91,14 @@ module cla
    // TODO: your code here
    wire [31:0] gen,prop;
    wire [27:0] carry_out;
-   wire c_out[3];
-   wire gout[4];
-   wire pout[4];
+//    wire c_out[3];
+//    wire gout[4];
+//    wire pout[4];
+      wire [2:0]c_out;
+      wire [3:0]gout;
+      wire [3:0]pout;
+      wire gp4_g;
+      wire gp4_p;
 
    genvar i;
    for(i=0;i<32;i++)
@@ -113,7 +118,7 @@ module cla
          .pout(pout[0]),
          .cout(carry_out[6:0])
    );
-   assign c_out[0]=gout[0]|(pout[0]&carry_out[6]);
+//    assign c_out[0]=gout[0]|(pout[0]&carry_out[6]);
    gp8 g8_1(
          .gin(gen[15:8]),
          .pin(prop[15:8]),
@@ -122,7 +127,7 @@ module cla
          .pout(pout[1]),
          .cout(carry_out[13:7])
    );
-   assign c_out[1]=gout[1]|(pout[1]&carry_out[13]);
+//    assign c_out[1]=gout[1]|(pout[1]&carry_out[13]);
    gp8 g8_2(
          .gin(gen[23:16]),
          .pin(prop[23:16]),
@@ -131,7 +136,7 @@ module cla
          .pout(pout[2]),
          .cout(carry_out[20:14])
    );
-   assign c_out[2]=gout[2]|(pout[2]&carry_out[20]);
+//    assign c_out[2]=gout[2]|(pout[2]&carry_out[20]);
    gp8 g8_3(
          .gin(gen[31:24]),
          .pin(prop[31:24]),
@@ -139,6 +144,15 @@ module cla
          .gout(gout[3]),
          .pout(pout[3]),
          .cout(carry_out[27:21])
+   );
+
+   gp4 g4(
+      .gin(gout),
+      .pin(pout),
+      .cin(cin),
+      .gout(gp4_g),
+      .pout(gp4_p),
+      .cout(c_out)
    );
 
 
