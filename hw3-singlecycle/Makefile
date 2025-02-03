@@ -3,7 +3,7 @@ VERILOG_SYNTH_SOURCE=system/System.v
 
 TOP_MODULE_RESOURCE_CHECK=SystemResourceCheck
 TOP_MODULE_DEMO=SystemDemo
-CONSTRAINTS=system/board.lpf
+CONSTRAINTS=../common/constraints/ulx3s.lpf
 
 ZIP_SOURCES=DatapathSingleCycle.sv ../hw2a-divider/divider_unsigned.sv ../hw2b-cla/cla.sv fpga_build/resource-report.json
 ZIP_FILE=single.zip
@@ -31,3 +31,8 @@ clock-gen: Makefile
 	@echo '`timescale 1ns / 1ns' >> $(CLOCK_GEN_FILE)
 	@echo '' >> $(CLOCK_GEN_FILE)
 	@cat .tmp-clk-gen.v >> $(CLOCK_GEN_FILE)
+
+# compile demo code and extract into mem_initial_contents.hex
+demo-code:
+	cd ledrop && cargo build --release
+	python3 make-mem-contents.py
