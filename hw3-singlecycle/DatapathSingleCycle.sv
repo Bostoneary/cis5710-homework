@@ -244,6 +244,17 @@ module DatapathSingleCycle (
   always_comb begin
     illegal_insn = 1'b0;
 
+    we=0;
+    rd=0;
+    rd_data=0;
+    rs1=0;
+    rs2=0;
+    pcNext=0;
+    a=0;
+    b=0;
+    cin=0;
+    halt=0;
+
     case (insn_opcode)
       OpLui: begin
         // TODO: start here by implementing lui
@@ -260,6 +271,7 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           a=rs1_data;
           cin=1'b0;
+          we=1'b1;
           rd=insn_rd;
           rd_data=sum;
           pcNext=pcCurrent+4;
@@ -296,18 +308,7 @@ module DatapathSingleCycle (
       end
       OpEnviron:
       begin
-        if(insn_add)
-        begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
-          a=rs1_data;
-          b=rs2_data;
-          cin=1'b0;
-          we=1'b1;
-          rd=insn_rd;
-          rd_data=sum;
-          pcNext=pcCurrent+4;
-        end
+        halt=1;
       end
       default: begin
         rs1=0;
