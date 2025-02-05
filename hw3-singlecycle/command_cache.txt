@@ -1,1 +1,0 @@
-pytest --exitfirst --capture=no -k runCocotbTestsProcessor testbench.py
