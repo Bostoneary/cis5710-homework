@@ -292,6 +292,54 @@ module DatapathSingleCycle (
           rd_data=($unsigned(rs1_data)<$unsigned(imm_i_sext))?1:0;
           pcNext=pcCurrent+4;
         end
+        else if(insn_xori)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data^imm_i_sext;
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_ori)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data|imm_i_sext;
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_andi)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data&imm_i_sext;
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_slli)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data<<imm_b[4:0];
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_srli)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data>>imm_b[4:0];
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_srai)
+        begin
+          rs1=insn_rs1;
+          rd=insn_rd;
+          we=1'b1;
+          rd_data=rs1_data>>imm_b[4:0];
+          pcNext=pcCurrent+4;
+        end
       end
       OpRegReg:
       begin
@@ -317,6 +365,58 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           rs2=insn_rs2;
           if(rs1_data!=rs2_data)
+          begin
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+        else if(insn_blt)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data<rs2_data)
+          begin
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+        else if(insn_bge)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data>=rs2_data)
+          begin
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+        else if(insn_bltu)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data<$unsigned(rs2_data))
+          begin
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
+          end
+          else
+          begin
+            pcNext=pcCurrent+4;
+          end
+        end
+        else if(insn_bgeu)
+        begin
+          rs1=insn_rs1;
+          rs2=insn_rs2;
+          if(rs1_data>=$unsigned(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
           end
