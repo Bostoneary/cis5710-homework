@@ -276,6 +276,26 @@ module DatapathSingleCycle (
           rd_data=sum;
           pcNext=pcCurrent+4;
         end
+        else if(insn_slti)
+        begin
+          rs1=insn_rs1;
+          we=1'b1;
+          rd=insn_rd;
+          rd_data=(rs1_data<imm_i_sext)?1:0;
+          pcNext=pcCurrent+4;
+        end
+        else if(insn_sltiu)
+        begin
+          rs1=insn_rs1;
+          we=1'b1;
+          rd=insn_rd;
+          rd_data=($unsigned(rs1_data)<$unsigned(imm_i_sext))?1:0;
+          pcNext=pcCurrent+4;
+        end
+      end
+      OpRegReg:
+      begin
+
       end
       OpBranch:
       begin
@@ -285,7 +305,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data==rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
           end
           else
           begin
@@ -298,7 +318,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data!=rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext[30:0]<<1);
           end
           else
           begin

@@ -1,24 +1,39 @@
 #!/bin/bash
 
-# 检查是否传入了参数
+usage() {
+    echo "How to use this："
+    echo "  $0 [arguements]"
+    echo "avaliable option："
+    echo "-codecheck check you code"
+    echo "-reg run regFile test"
+    echo "-processor run processor test"
+    echo "-A run test for milestone A "
+    echo "Example："
+    echo "  $0 -A"
+}
+
+# check if the arg is vaild
 if [ -z "$1" ]; then
-    echo "Usage: $0 {reg|processor|all}"
+    usage
     exit 1
 fi
 
 case "$1" in
-  reg)
+  -codecheck)
+    make codecheck
+    ;;
+  -reg)
     pytest --exitfirst --capture=no -k runCocotbTestsRegisterFile testbench.py
     ;;
-  processor)
+  -processor)
     pytest --exitfirst --capture=no -k runCocotbTestsProcessor testbench.py
     ;;
-  all)
+  -A)
     RVTEST_ALUBR=1 pytest --exitfirst --capture=no testbench.py
     ;;
   *)
-    echo "无效的参数: $1"
-    echo "Usage: $0 {reg|processor|all}"
+    echo "invalid arg: $1"
+    usage
     exit 1
     ;;
 esac
