@@ -353,7 +353,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data==rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
@@ -366,7 +366,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data!=rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
@@ -379,7 +379,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data<rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
@@ -392,7 +392,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data>=rs2_data)
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
@@ -405,7 +405,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data<$unsigned(rs2_data))
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
@@ -418,7 +418,7 @@ module DatapathSingleCycle (
           rs2=insn_rs2;
           if(rs1_data>=$unsigned(rs2_data))
           begin
-            pcNext=pcCurrent+(imm_b_sext<<1);
+            pcNext=pcCurrent+(imm_b_sext);
           end
           else
           begin
