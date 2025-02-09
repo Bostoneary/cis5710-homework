@@ -232,6 +232,10 @@ module DatapathSingleCycle (
   logic [31:0]b;
   logic cin;
   logic [31:0]sum;
+  logic sign_bit;
+  logic [31:0] logical_shift;
+  logic [31:0] sign_mask;
+
   cla cla(
     .a(a),
     .b(b),
@@ -253,6 +257,9 @@ module DatapathSingleCycle (
     a=0;
     b=0;
     cin=0;
+    sign_bit=0;
+    logical_shift=0;
+    sign_mask=0;
     halt=0;
 
     case (insn_opcode)
@@ -281,7 +288,7 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           we=1'b1;
           rd=insn_rd;
-          rd_data=(rs1_data<imm_i_sext)?1:0;
+          rd_data=($signed(rs1_data)<$signed(imm_i_sext))?1:0;
           pcNext=pcCurrent+4;
         end
         else if(insn_sltiu)
@@ -321,7 +328,7 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           rd=insn_rd;
           we=1'b1;
-          rd_data=rs1_data<<imm_b[4:0];
+          rd_data=rs1_data<<imm_i[4:0];
           pcNext=pcCurrent+4;
         end
         else if(insn_srli)
@@ -329,7 +336,7 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           rd=insn_rd;
           we=1'b1;
-          rd_data=rs1_data>>imm_b[4:0];
+          rd_data=rs1_data>>imm_i[4:0];
           pcNext=pcCurrent+4;
         end
         else if(insn_srai)
@@ -337,7 +344,10 @@ module DatapathSingleCycle (
           rs1=insn_rs1;
           rd=insn_rd;
           we=1'b1;
-          rd_data=rs1_data>>imm_b[4:0];
+          sign_bit=rs1_data[31];
+          logical_shift = rs1_data >> imm_i[4:0];
+          sign_mask = sign_bit ? ~(32'hFFFFFFFF >> imm_i[4:0]) : 32'h0;
+          rd_data=logical_shift|sign_mask;
           pcNext=pcCurrent+4;
         end
       end
@@ -377,7 +387,7 @@ module DatapathSingleCycle (
         begin
           rs1=insn_rs1;
           rs2=insn_rs2;
-          if(rs1_data<rs2_data)
+          if($signed(rs1_data)<$signed(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
@@ -390,7 +400,7 @@ module DatapathSingleCycle (
         begin
           rs1=insn_rs1;
           rs2=insn_rs2;
-          if(rs1_data>=rs2_data)
+          if($signed(rs1_data)>=$signed(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
