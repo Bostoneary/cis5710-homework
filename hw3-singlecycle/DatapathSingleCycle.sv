@@ -478,7 +478,7 @@ module DatapathSingleCycle (
           end
           else
           begin
-            pcNext=pcCurrent+3;
+            pcNext=pcCurrent+4;
           end
         end
         else if(insn_blt)
