@@ -11,14 +11,14 @@
 module MyClockGen
 (
     input input_clk_25MHz, // 25 MHz, 0 deg
-    output clk_proc, // 4.16667 MHz, 0 deg
-    output clk_mem, // 4.01003 MHz, 90 deg
+    output clk_proc, // 64.2857 MHz, 0 deg
+    output clk_mem, // 64.2857 MHz, 85 deg
     output locked
 );
 wire clkfb;
 (* FREQUENCY_PIN_CLKI="25" *)
-(* FREQUENCY_PIN_CLKOP="4.16667" *)
-(* FREQUENCY_PIN_CLKOS="4.01003" *)
+(* FREQUENCY_PIN_CLKOP="64.2857" *)
+(* FREQUENCY_PIN_CLKOS="64.2857" *)
 (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
 EHXPLLL #(
         .PLLRST_ENA("DISABLED"),
@@ -29,17 +29,17 @@ EHXPLLL #(
         .OUTDIVIDER_MUXB("DIVB"),
         .OUTDIVIDER_MUXC("DIVC"),
         .OUTDIVIDER_MUXD("DIVD"),
-        .CLKI_DIV(6),
+        .CLKI_DIV(7),
         .CLKOP_ENABLE("ENABLED"),
-        .CLKOP_DIV(128),
-        .CLKOP_CPHASE(64),
+        .CLKOP_DIV(9),
+        .CLKOP_CPHASE(4),
         .CLKOP_FPHASE(0),
         .CLKOS_ENABLE("ENABLED"),
-        .CLKOS_DIV(133),
-        .CLKOS_CPHASE(97),
-        .CLKOS_FPHASE(2),
+        .CLKOS_DIV(9),
+        .CLKOS_CPHASE(6),
+        .CLKOS_FPHASE(1),
         .FEEDBK_PATH("INT_OP"),
-        .CLKFB_DIV(1)
+        .CLKFB_DIV(18)
     ) pll_i (
         .RST(1'b0),
         .STDBY(1'b0),

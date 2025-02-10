@@ -279,7 +279,7 @@ module DatapathSingleCycle (
           a=rs1_data;
           // cin=1'b0;
           we=1'b1;
-          rd=insn_rd;
+          // rd=insn_rd;
           rd_data=sum;
           //pcNext=pcCurrent+4;
         end
