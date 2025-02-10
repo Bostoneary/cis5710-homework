@@ -232,15 +232,40 @@ module DatapathSingleCycle (
   logic [31:0]b;
   logic cin;
   logic [31:0]sum;
+  logic [31:0]i_dividend;
+  logic [31:0]i_divisor;
+  logic [31:0]o_quotient;
+  logic [31:0]o_remainder;
   // logic sign_bit;
   // logic [31:0] logical_shift;
   // logic [31:0] sign_mask;
+
+  typedef enum logic {
+        CALC_ADDR,
+        LOAD_BYTE
+    } state_t;
+
+  state_t state, next_state;
+
+ always_ff @(posedge clk) begin
+        if (!insn_lb)
+            state <= CALC_ADDR;
+        else
+            state <= next_state;
+    end
 
   cla cla(
     .a(a),
     .b(b),
     .cin(cin),
     .sum(sum)
+  );
+
+  divider_unsigned divi(
+    .i_dividend(i_dividend),
+    .i_divisor(i_divisor),
+    .o_quotient(o_quotient),
+    .o_remainder(o_remainder)
   );
 
   logic illegal_insn;
@@ -257,18 +282,28 @@ module DatapathSingleCycle (
     a=0;
     b=0;
     cin=0;
+    addr_to_dmem=0;
+    next_state=state;
+    i_dividend=0;
+    i_divisor=1;
     // sign_bit=0;
     // logical_shift=0;
     // sign_mask=0;
     halt=0;
 
     case (insn_opcode)
-      OpLui: begin
+      OpLui:
+      begin
         // TODO: start here by implementing lui
         we=1'b1;
         //rd=insn_rd;
         rd_data=insn_from_imem[31:12]<<12;
         //pcNext=pcCurrent+4;
+      end
+      OpAuipc:
+      begin
+        we=1'b1;
+        rd_data=pcCurrent+(insn_from_imem[31:12]<<12);
       end
       OpRegImm:
       begin
@@ -454,6 +489,32 @@ module DatapathSingleCycle (
             // pcNext=pcCurrent+4;
             rd_data=(rs1_data>>rs2_data[4:0])|(rs1_data[31]?~(32'hFFFFFFFF >> rs2_data[4:0]) : 32'h0);
           end
+      end
+      OpLoad:
+      begin
+        if(insn_lb)
+        i_dividend=(rs1_data+imm_i_sext);
+        i_divisor=4;
+        begin
+          case(state)
+          CALC_ADDR:
+          begin
+            addr_to_dmem=o_quotient<<2;
+            pcNext=pcCurrent;
+            next_state=LOAD_BYTE;
+          end
+          LOAD_BYTE:
+          begin
+            we=1'b1;
+            addr_to_dmem=o_quotient<<2;
+            rd_data={{24{load_data_from_dmem[o_remainder*8+7]}},load_data_from_dmem[o_remainder*8+:8]};
+            next_state=CALC_ADDR;
+          end
+          default:
+          begin
+          end
+          endcase
+        end
       end
       OpBranch:
       begin

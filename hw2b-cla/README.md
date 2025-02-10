@@ -83,7 +83,7 @@ Go [here](https://ftdichip.com/drivers/d2xx-drivers/) and download FTDI drivers.
 After you download and install the drivers, reboot your machine and Windows will automatically use these drivers when your ULXS3 board is plugged in.
 You can also open your device manager and check the COM port to see if the FPGA is connected and is using the right driver.
 
-Lastly, run `./fujprog path/to/your/bitstream` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
+Lastly, run `./fujprog fpga_build/SystemDemo.bit` to program your FPGA. If everything goes right, you will see related prompt on the terminal.
 
 ### Mac
 
