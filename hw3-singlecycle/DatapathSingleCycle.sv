@@ -232,9 +232,9 @@ module DatapathSingleCycle (
   logic [31:0]b;
   logic cin;
   logic [31:0]sum;
-  logic sign_bit;
-  logic [31:0] logical_shift;
-  logic [31:0] sign_mask;
+  // logic sign_bit;
+  // logic [31:0] logical_shift;
+  // logic [31:0] sign_mask;
 
   cla cla(
     .a(a),
@@ -249,289 +249,291 @@ module DatapathSingleCycle (
     illegal_insn = 1'b0;
 
     we=0;
-    rd=0;
+    rd=insn_rd;
     rd_data=0;
-    rs1=0;
-    rs2=0;
-    pcNext=0;
+    rs1=insn_rs1;
+    rs2=insn_rs2;
+    pcNext=pcCurrent+4;
     a=0;
     b=0;
     cin=0;
-    sign_bit=0;
-    logical_shift=0;
-    sign_mask=0;
+    // sign_bit=0;
+    // logical_shift=0;
+    // sign_mask=0;
     halt=0;
 
     case (insn_opcode)
       OpLui: begin
         // TODO: start here by implementing lui
         we=1'b1;
-        rd=insn_rd;
+        //rd=insn_rd;
         rd_data=insn_from_imem[31:12]<<12;
-        pcNext=pcCurrent+4;
+        //pcNext=pcCurrent+4;
       end
       OpRegImm:
       begin
         if(insn_addi)
         begin
           b=imm_i_sext;
-          rs1=insn_rs1;
+          //rs1=insn_rs1;
           a=rs1_data;
-          cin=1'b0;
+          // cin=1'b0;
           we=1'b1;
           rd=insn_rd;
           rd_data=sum;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_slti)
         begin
-          rs1=insn_rs1;
+          //rs1=insn_rs1;
           we=1'b1;
-          rd=insn_rd;
+          //rd=insn_rd;
           rd_data=($signed(rs1_data)<$signed(imm_i_sext))?1:0;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_sltiu)
         begin
-          rs1=insn_rs1;
+          //rs1=insn_rs1;
           we=1'b1;
-          rd=insn_rd;
+          //rd=insn_rd;
           rd_data=($unsigned(rs1_data)<$unsigned(imm_i_sext))?1:0;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_xori)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          //rs1=insn_rs1;
+          //rd=insn_rd;
           we=1'b1;
           rd_data=rs1_data^imm_i_sext;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_ori)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          //rs1=insn_rs1;
+          //rd=insn_rd;
           we=1'b1;
           rd_data=rs1_data|imm_i_sext;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_andi)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          //rs1=insn_rs1;
+          //rd=insn_rd;
           we=1'b1;
           rd_data=rs1_data&imm_i_sext;
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_slli)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          //rs1=insn_rs1;
+          //rd=insn_rd;
           we=1'b1;
           rd_data=rs1_data<<imm_i[4:0];
-          pcNext=pcCurrent+4;
+          //pcNext=pcCurrent+4;
         end
         else if(insn_srli)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          //rs1=insn_rs1;
+          // rd=insn_rd;
           we=1'b1;
           rd_data=rs1_data>>imm_i[4:0];
-          pcNext=pcCurrent+4;
+          // pcNext=pcCurrent+4;
         end
         else if(insn_srai)
         begin
-          rs1=insn_rs1;
-          rd=insn_rd;
+          // rs1=insn_rs1;
+          // rd=insn_rd;
           we=1'b1;
-          sign_bit=rs1_data[31];
-          logical_shift = rs1_data >> imm_i[4:0];
-          sign_mask = sign_bit ? ~(32'hFFFFFFFF >> imm_i[4:0]) : 32'h0;
-          rd_data=logical_shift|sign_mask;
-          pcNext=pcCurrent+4;
+          // sign_bit=rs1_data[31];
+          // logical_shift = rs1_data >> imm_i[4:0];
+          // sign_mask = sign_bit ? ~(32'hFFFFFFFF >> imm_i[4:0]) : 32'h0;
+          // rd_data=logical_shift|sign_mask;
+          rd_data=(rs1_data>>imm_i[4:0])|(rs1_data[31]?~(32'hFFFFFFFF >> imm_i[4:0]) : 32'h0);
+          // pcNext=pcCurrent+4;
         end
       end
       OpRegReg:
       begin
         if(insn_add)
           begin
-            rs2=insn_rs2;
+            // rs2=insn_rs2;
             b=rs2_data;
-            rs1=insn_rs1;
+            // rs1=insn_rs1;
             a=rs1_data;
-            cin=1'b0;
+            // cin=1'b0;
             we=1'b1;
-            rd=insn_rd;
+            // rd=insn_rd;
             rd_data=sum;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_sub)
           begin
-            rs2=insn_rs2;
+            // rs2=insn_rs2;
             b=~rs2_data + 1;
-            rs1=insn_rs1;
+            // rs1=insn_rs1;
             a=rs1_data;
-            cin=1'b0;
+            // cin=1'b0;
             we=1'b1;
-            rd=insn_rd;
+            // rd=insn_rd;
             rd_data=sum;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_sll)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
             rd_data=rs1_data<<rs2_data[4:0];
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_slt)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
             we=1'b1;
-            rd=insn_rd;
+            // rd=insn_rd;
             rd_data=($signed(rs1_data)<$signed(rs2_data))?1:0;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_sltu)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
             we=1'b1;
-            rd=insn_rd;
+            // rd=insn_rd;
             rd_data=($unsigned(rs1_data)<$unsigned(rs2_data))?1:0;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_xor)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
             rd_data=rs1_data^rs2_data;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_or)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
             rd_data=rs1_data|rs2_data;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_and)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
             rd_data=rs1_data&rs2_data;
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_srl)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
             rd_data=rs1_data>>rs2_data[4:0];
-            pcNext=pcCurrent+4;
+            // pcNext=pcCurrent+4;
           end
         else if(insn_sra)
           begin
-            rs2=insn_rs2;
-            rs1=insn_rs1;
-            rd=insn_rd;
+            // rs2=insn_rs2;
+            // rs1=insn_rs1;
+            // rd=insn_rd;
             we=1'b1;
-            sign_bit=rs1_data[31];
-            logical_shift = rs1_data >> rs2_data[4:0];
-            sign_mask = sign_bit ? ~(32'hFFFFFFFF >> rs2_data[4:0]) : 32'h0;
-            rd_data=logical_shift|sign_mask;
-            pcNext=pcCurrent+4;
+            // sign_bit=rs1_data[31];
+            // logical_shift = rs1_data >> rs2_data[4:0];
+            // sign_mask = sign_bit ? ~(32'hFFFFFFFF >> rs2_data[4:0]) : 32'h0;
+            // rd_data=logical_shift|sign_mask;
+            // pcNext=pcCurrent+4;
+            rd_data=(rs1_data>>rs2_data[4:0])|(rs1_data[31]?~(32'hFFFFFFFF >> rs2_data[4:0]) : 32'h0);
           end
       end
       OpBranch:
       begin
         if(insn_beq)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if(rs1_data==rs2_data)
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
         else if(insn_bne)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if(rs1_data!=rs2_data)
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
         else if(insn_blt)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if($signed(rs1_data)<$signed(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
         else if(insn_bge)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if($signed(rs1_data)>=$signed(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
         else if(insn_bltu)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if(rs1_data<$unsigned(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
         else if(insn_bgeu)
         begin
-          rs1=insn_rs1;
-          rs2=insn_rs2;
+          // rs1=insn_rs1;
+          // rs2=insn_rs2;
           if(rs1_data>=$unsigned(rs2_data))
           begin
             pcNext=pcCurrent+(imm_b_sext);
           end
-          else
-          begin
-            pcNext=pcCurrent+4;
-          end
+          // else
+          // begin
+          //   pcNext=pcCurrent+4;
+          // end
         end
       end
       OpEnviron:
@@ -539,7 +541,6 @@ module DatapathSingleCycle (
         halt=1;
       end
       default: begin
-        rs1=0;
         illegal_insn = 1'b1;
       end
     endcase
