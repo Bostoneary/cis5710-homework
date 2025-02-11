@@ -243,8 +243,8 @@ module DatapathSingleCycle (
   typedef enum logic[1:0]{
         CALC_ADDR,
         LOAD_BYTE,
-        LOAD_LowByte,
-        LOAD_HighByte
+        LOAD_LOWBYTE,
+        LOAD_HIGHBYTE
     } state_t;
 
   state_t state, next_state;
@@ -527,7 +527,7 @@ module DatapathSingleCycle (
               addr_to_dmem=o_quotient<<2;
               pcNext=pcCurrent;
               if (o_remainder == 3) begin
-                next_state = LOAD_LowByte;
+                next_state = LOAD_LOWBYTE;
               end
               else begin
                 next_state=LOAD_BYTE;
@@ -537,21 +537,23 @@ module DatapathSingleCycle (
             begin
               we=1'b1;
               addr_to_dmem=o_quotient<<2;
-              rd_data={{16{load_data_from_dmem[o_remainder*16+15]}},load_data_from_dmem[o_remainder*16+:16]};
+              rd_data={{16{load_data_from_dmem[o_remainder*8+15]}},load_data_from_dmem[o_remainder*8+:16]};
               next_state=CALC_ADDR;
             end
-            LOAD_LowByte:
+            LOAD_LOWBYTE:
             begin
               we=1'b1;
               addr_to_dmem=(o_quotient+1)<<2;
-              rd_data={{24{load_data_from_dmem[o_remainder*8+7]}},load_data_from_dmem[o_remainder*8+:8]};
-              next_state=LOAD_HighByte;
+              rd_data={{24{load_data_from_dmem[31]}},load_data_from_dmem[31:24]};
+              next_state=LOAD_HIGHBYTE;
+              pcNext=pcCurrent;
             end
-            LOAD_HighByte:
+            LOAD_HIGHBYTE:
             begin
               we=1'b1;
-              addr_to_dmem=o_quotient<<2;
-              rd_data={{24{load_data_from_dmem[o_remainder*8+7]}},load_data_from_dmem[o_remainder*8+:8]};
+              addr_to_dmem=(o_quotient+1)<<2;
+              rs1=insn_rd;
+              rd_data={{16{load_data_from_dmem[7]}},load_data_from_dmem[7:0],rs1_data[7:0]};
               next_state=CALC_ADDR;
             end
             default:
