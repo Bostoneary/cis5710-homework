@@ -240,19 +240,20 @@ module DatapathSingleCycle (
   // logic [31:0] logical_shift;
   // logic [31:0] sign_mask;
 
-  typedef enum logic {
+  typedef enum {
         CALC_ADDR,
-        LOAD_BYTE
+        LOAD_BYTE,
+        LOAD_BYTEONE
     } state_t;
 
   state_t state, next_state;
 
  always_ff @(posedge clk) begin
-        if (!insn_lb)
+   if ((!insn_lb)&(!insn_lh))
             state <= CALC_ADDR;
-        else
+       else
             state <= next_state;
-    end
+      end
 
   cla cla(
     .a(a),
@@ -493,9 +494,9 @@ module DatapathSingleCycle (
       OpLoad:
       begin
         if(insn_lb)
-        i_dividend=(rs1_data+imm_i_sext);
-        i_divisor=4;
         begin
+          i_dividend=(rs1_data+imm_i_sext);
+          i_divisor=4;
           case(state)
           CALC_ADDR:
           begin
@@ -515,6 +516,40 @@ module DatapathSingleCycle (
           end
           endcase
         end
+        else if(insn_lh)
+          begin
+            i_dividend=(rs1_data+imm_i_sext);
+            i_divisor=4;
+            case(state)
+            CALC_ADDR:
+            begin
+              addr_to_dmem=o_quotient<<2;
+              pcNext=pcCurrent;
+              next_state=LOAD_BYTE;
+            end
+            LOAD_BYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=o_quotient<<1;
+              rd_data={{24{load_data_from_dmem[o_remainder*8+7]}},load_data_from_dmem[o_remainder*8+:8]};
+              next_state=LOAD_BYTEONE;
+            end
+            LOAD_BYTEONE:
+            begin
+              we=1'b1;
+              addr_to_dmem=o_quotient<<2;
+              rd_data={{24{load_data_from_dmem[o_remainder*8+15]}},load_data_from_dmem[o_remainder*8+7+:8]};
+              next_state=CALC_ADDR;
+            end
+            default:
+            begin
+            end
+            endcase
+          end
+      else if(insn_lbu)
+          begin
+          end
+        
       end
       OpBranch:
       begin
