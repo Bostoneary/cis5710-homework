@@ -250,7 +250,7 @@ module DatapathSingleCycle (
   state_t state, next_state;
 
  always_ff @(posedge clk) begin
-   if ((!insn_lb)&(!insn_lh))
+   if ((!insn_lb)&(!insn_lh)&(!insn_lw)&(!insn_lbu)&(!insn_lhu)&(!insn_sh)&(!insn_sw))
             state <= CALC_ADDR;
        else
             state <= next_state;
@@ -561,10 +561,220 @@ module DatapathSingleCycle (
             end
             endcase
           end
-      else if(insn_lbu)
+        else if(insn_lw)
+        begin
+          i_dividend=(rs1_data+imm_i_sext);
+          i_divisor=4;
+            case(state)
+            CALC_ADDR:
+            begin
+              addr_to_dmem=o_quotient<<2;
+              pcNext=pcCurrent;
+              if (o_remainder>0) begin
+                next_state = LOAD_LOWBYTE;
+              end
+              else begin
+                next_state=LOAD_BYTE;
+              end
+            end
+            LOAD_BYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=o_quotient<<2;
+              rd_data=load_data_from_dmem;
+              next_state=CALC_ADDR;
+            end
+            LOAD_LOWBYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=(o_quotient+1)<<2;
+              case(o_remainder)
+              1: rd_data = {8'b0, load_data_from_dmem[31:8]};
+              2: rd_data = {16'b0, load_data_from_dmem[31:16]};
+              3: rd_data = {24'b0, load_data_from_dmem[31:24]};
+              default:rd_data=load_data_from_dmem;
+              endcase
+              next_state=LOAD_HIGHBYTE;
+              pcNext=pcCurrent;
+            end
+            LOAD_HIGHBYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=(o_quotient+1)<<2;
+              rs1=insn_rd;
+              case(o_remainder)
+              1: rd_data = {load_data_from_dmem[7:0], rs1_data[23:0]};
+              2: rd_data = {load_data_from_dmem[15:0], rs1_data[15:0]};
+              3: rd_data = {load_data_from_dmem[23:0], rs1_data[7:0]};
+              default:rd_data=load_data_from_dmem;
+              endcase
+              next_state=CALC_ADDR;
+            end
+            default:
+            begin
+            end
+            endcase
+        end
+        else if(insn_lbu)
+        begin
+          i_dividend=(rs1_data+imm_i_sext);
+          i_divisor=4;
+          case(state)
+          CALC_ADDR:
+          begin
+            addr_to_dmem=o_quotient<<2;
+            pcNext=pcCurrent;
+            next_state=LOAD_BYTE;
+          end
+          LOAD_BYTE:
+          begin
+            we=1'b1;
+            addr_to_dmem=o_quotient<<2;
+            rd_data={24'b0,load_data_from_dmem[o_remainder*8+:8]};
+            next_state=CALC_ADDR;
+          end
+          default:
           begin
           end
-        
+          endcase
+        end
+        else if(insn_lhu)
+        begin
+            i_dividend=(rs1_data+imm_i_sext);
+            i_divisor=4;
+            case(state)
+            CALC_ADDR:
+            begin
+              addr_to_dmem=o_quotient<<2;
+              pcNext=pcCurrent;
+              if (o_remainder == 3) begin
+                next_state = LOAD_LOWBYTE;
+              end
+              else begin
+                next_state=LOAD_BYTE;
+              end
+            end
+            LOAD_BYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=o_quotient<<2;
+              rd_data={16'b0,load_data_from_dmem[o_remainder*8+:16]};
+              next_state=CALC_ADDR;
+            end
+            LOAD_LOWBYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=(o_quotient+1)<<2;
+              rd_data={24'b0,load_data_from_dmem[31:24]};
+              next_state=LOAD_HIGHBYTE;
+              pcNext=pcCurrent;
+            end
+            LOAD_HIGHBYTE:
+            begin
+              we=1'b1;
+              addr_to_dmem=(o_quotient+1)<<2;
+              rs1=insn_rd;
+              rd_data={16'b0,load_data_from_dmem[7:0],rs1_data[7:0]};
+              next_state=CALC_ADDR;
+            end
+            default:
+            begin
+            end
+            endcase
+          end
+      end
+      OpStore:
+      begin
+        if(insn_sb)
+        begin
+          i_dividend=(rs1_data+imm_s_sext);
+          i_divisor=4;
+          addr_to_dmem=o_quotient<<2;
+          store_we_to_dmem=4'b0001<<o_remainder;
+          store_data_to_dmem=rs2_data<<(o_remainder*8);
+        end
+        if(insn_sh)
+        begin
+          i_dividend=(rs1_data+imm_s_sext);
+          i_divisor=4;
+          case(state)
+          CALC_ADDR:
+          begin
+          addr_to_dmem=o_quotient<<2;
+          store_we_to_dmem=4'b0011<<o_remainder;
+          store_data_to_dmem=rs2_data<<(o_remainder*8);
+          if(o_remainder == 3)
+          begin
+            next_state = LOAD_BYTE;
+            pcNext=pcCurrent;
+          end
+          else
+          begin
+            next_state=CALC_ADDR;
+          end
+          end
+          LOAD_BYTE:
+          begin
+            addr_to_dmem=(o_quotient+1)<<2;
+            store_we_to_dmem=4'b0001;
+            store_data_to_dmem=rs2_data<<8;
+            next_state=CALC_ADDR;
+          end
+          default:
+          begin
+          end
+        endcase
+        end
+      else if(insn_sw)
+      begin
+        i_dividend=(rs1_data+imm_s_sext);
+        i_divisor=4;
+        case(state)
+        CALC_ADDR:
+        begin
+        addr_to_dmem=o_quotient<<2;
+        store_we_to_dmem=4'b1111<<o_remainder;
+        store_data_to_dmem=rs2_data<<(o_remainder*8);
+        if(o_remainder>0)
+        begin
+          next_state=LOAD_BYTE;
+          pcNext=pcCurrent;
+        end
+        else
+        begin
+          next_state=CALC_ADDR;
+        end
+        end
+        LOAD_BYTE:
+        begin
+          addr_to_dmem=(o_quotient+1)<<2;
+          case(o_remainder)
+          1:
+          begin
+            store_we_to_dmem=4'b0001;
+            store_data_to_dmem=rs2_data>>24;
+          end
+          2:
+          begin
+            store_we_to_dmem=4'b0011;
+            store_data_to_dmem=rs2_data>>16;
+          end
+          3:
+          begin
+            store_we_to_dmem=4'b0111;
+            store_data_to_dmem=rs2_data>>8;
+          end
+          default:
+          begin
+          end
+          endcase
+          next_state=CALC_ADDR;
+        end
+        default
+        begin
+        end
+      endcase
+      end
       end
       OpBranch:
       begin
