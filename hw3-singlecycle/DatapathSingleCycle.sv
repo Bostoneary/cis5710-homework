@@ -236,6 +236,11 @@ module DatapathSingleCycle (
   logic [31:0]i_divisor;
   logic [31:0]o_quotient;
   logic [31:0]o_remainder;
+  logic [63:0]signed_rs1;
+  logic [63:0]signed_rs2;
+  logic [63:0]unsign_rs1;
+  logic [63:0]unsign_rs2;
+  logic [63:0]signed_rd_data;
   // logic sign_bit;
   // logic [31:0] logical_shift;
   // logic [31:0] sign_mask;
@@ -274,7 +279,10 @@ module DatapathSingleCycle (
 
   always_comb begin
     illegal_insn = 1'b0;
-
+    signed_rs1=0;
+    signed_rs2=0;
+    unsign_rs1=0;
+    unsign_rs2=0;
     we=0;
     rd=insn_rd;
     rd_data=0;
@@ -490,6 +498,54 @@ module DatapathSingleCycle (
             // rd_data=logical_shift|sign_mask;
             // pcNext=pcCurrent+4;
             rd_data=(rs1_data>>rs2_data[4:0])|(rs1_data[31]?~(32'hFFFFFFFF >> rs2_data[4:0]) : 32'h0);
+          end
+        else if(insn_mul)
+          begin
+            we=1'b1;
+            rd_data=rs1_data * rs2_data;
+          end
+        else if(insn_mulh)
+          begin
+            we=1'b1;
+            signed_rs1={{32{$signed(rs1_data[31])}}, $signed(rs1_data)};
+            signed_rs2={{32{$signed(rs2_data[31])}}, $signed(rs2_data)};
+            signed_rd_data=signed_rs1*signed_rs2;
+            rd_data=signed_rd_data[63:32];
+          end
+        else if(insn_mulhsu)
+          begin
+            we=1'b1;
+            signed_rs1={{32{(rs1_data[31])}}, (rs1_data)};
+            unsign_rs2={{32{1'b0}},(rs2_data)};
+            signed_rd_data=signed_rs1*unsign_rs2;
+            rd_data=signed_rd_data[63:32];
+          end
+        else if(insn_mulhu)
+          begin
+            we=1'b1;
+            unsign_rs1={{32{1'b0}}, rs1_data};
+            unsign_rs2={{32{1'b0}}, rs2_data};
+            signed_rd_data=unsign_rs1*unsign_rs2;
+            rd_data=signed_rd_data[63:32];
+          end
+        else if(insn_div)
+          begin
+            we=1'b1;
+            i_divisor =rs2_data;
+            i_dividend=rs1_data;
+            rd_data=o_quotient;
+          end
+        else if(insn_divu)
+          begin
+            we=1'b1;
+          end
+        else if(insn_rem)
+          begin
+            we=1'b1;
+          end
+        else if(insn_remu)
+          begin
+            we=1'b1;
           end
       end
       OpLoad:
