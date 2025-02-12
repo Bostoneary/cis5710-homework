@@ -241,6 +241,7 @@ module DatapathSingleCycle (
   logic [63:0]unsign_rs1;
   logic [63:0]unsign_rs2;
   logic [63:0]signed_rd_data;
+  logic [31:0]test_divisor;
   // logic sign_bit;
   // logic [31:0] logical_shift;
   // logic [31:0] sign_mask;
@@ -296,6 +297,7 @@ module DatapathSingleCycle (
     next_state=state;
     i_dividend=0;
     i_divisor=1;
+    test_divisor = 0;
     // sign_bit=0;
     // logical_shift=0;
     // sign_mask=0;
@@ -531,21 +533,108 @@ module DatapathSingleCycle (
         else if(insn_div)
           begin
             we=1'b1;
-            i_divisor =rs2_data;
-            i_dividend=rs1_data;
-            rd_data=o_quotient;
+            if (rs2_data[31]==1)
+              begin
+                i_divisor =~(rs2_data-1);
+                test_divisor = ~(rs2_data-1);
+              end
+            else
+              begin
+                i_divisor = rs2_data;
+                test_divisor = rs2_data;
+              end
+            if (rs1_data[31]==1)
+              begin
+                i_dividend=~(rs1_data-1);
+              end
+            else
+              begin
+                i_dividend=rs1_data;
+              end
+            
+            if (test_divisor ==0)
+              begin
+                rd_data = -1;
+              end
+            else 
+              begin
+                if (rs1_data[31]^rs2_data[31])  //(rs1_data[31] && !rs2_data[31])||(!rs1_data[31] && rs2_data[31])
+                  begin
+                    rd_data = ~o_quotient+1;
+                  end
+                else
+                  begin
+                    rd_data=o_quotient;
+                  end
+              end
           end
         else if(insn_divu)
           begin
             we=1'b1;
+            i_divisor =rs2_data;
+            test_divisor =rs2_data;
+            i_dividend=rs1_data;
+            if (test_divisor ==0)
+              begin
+                rd_data = -1;
+              end
+            else 
+              begin
+                rd_data=o_quotient;
+              end
           end
         else if(insn_rem)
           begin
             we=1'b1;
+            if (rs2_data[31]==1)
+              begin
+                i_divisor =~(rs2_data-1);
+                test_divisor = ~(rs2_data-1);
+              end
+            else
+              begin
+                i_divisor = rs2_data;
+                test_divisor = rs2_data;
+              end
+            if (rs1_data[31]==1)
+              begin
+                i_dividend=~(rs1_data-1);
+              end
+            else
+              begin
+                i_dividend=rs1_data;
+              end
+            
+            if (test_divisor ==0)
+              begin
+                rd_data = rs1_data;
+              end
+            else 
+              begin
+                if (rs1_data[31])  //(rs1_data[31] && !rs2_data[31])||(!rs1_data[31] && rs2_data[31])
+                  begin
+                    rd_data = ~o_remainder+1;
+                  end
+                else
+                  begin
+                    rd_data=o_remainder;
+                  end
+              end
           end
         else if(insn_remu)
           begin
             we=1'b1;
+            i_divisor =rs2_data;
+            test_divisor =rs2_data;
+            i_dividend=rs1_data;
+            if (test_divisor ==0)
+              begin
+                rd_data = rs1_data;
+              end
+            else 
+              begin
+                rd_data=o_remainder;
+              end
           end
       end
       OpLoad:
