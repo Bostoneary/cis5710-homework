@@ -325,6 +325,11 @@ module DatapathSingleCycle (
         end
       OpJalr:
         begin
+          we=1'b1;
+          rd_data=pcCurrent+4;
+          b=imm_i_sext;
+          a=rs1_data;
+          pcNext=sum & (-1);
         end
       OpRegImm:
       begin
