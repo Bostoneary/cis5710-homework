@@ -317,6 +317,15 @@ module DatapathSingleCycle (
         we=1'b1;
         rd_data=pcCurrent+(insn_from_imem[31:12]<<12);
       end
+      OpJal:
+        begin
+          we=1'b1;
+          rd_data=pcCurrent+4;
+          pcNext = pcCurrent + (imm_j_sext);
+        end
+      OpJalr:
+        begin
+        end
       OpRegImm:
       begin
         if(insn_addi)
