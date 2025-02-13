@@ -330,7 +330,7 @@ module DatapathSingleCycle (
           rd_data=pcCurrent+4;
           b=imm_i_sext;
           a=rs1_data;
-          pcNext=sum & (-1);
+          pcNext=sum & (32'hFFFFFFFF << 1);
         end
       OpRegImm:
       begin
@@ -550,8 +550,8 @@ module DatapathSingleCycle (
             we=1'b1;
             if (rs2_data[31]==1)
               begin
-                i_divisor =~(rs2_data-1);
-                test_divisor = ~(rs2_data-1);
+                i_divisor =~(rs2_data)+1;
+                test_divisor = ~(rs2_data)+1;
               end
             else
               begin
@@ -560,7 +560,7 @@ module DatapathSingleCycle (
               end
             if (rs1_data[31]==1)
               begin
-                i_dividend=~(rs1_data-1);
+                i_dividend=~(rs1_data)+1;
               end
             else
               begin
@@ -568,7 +568,7 @@ module DatapathSingleCycle (
               end
             if (test_divisor ==0)
               begin
-                rd_data = -1;
+                rd_data = 32'hFFFFFFFF;
               end
             else 
               begin
@@ -590,7 +590,7 @@ module DatapathSingleCycle (
             i_dividend=rs1_data;
             if (test_divisor ==0)
               begin
-                rd_data = -1;
+                rd_data = 32'hffffffff;
               end
             else 
               begin
@@ -602,8 +602,8 @@ module DatapathSingleCycle (
             we=1'b1;
             if (rs2_data[31]==1)
               begin
-                i_divisor =~(rs2_data-1);
-                test_divisor = ~(rs2_data-1);
+                i_divisor =~(rs2_data)+1;
+                test_divisor = ~(rs2_data)+1;
               end
             else
               begin
@@ -612,7 +612,7 @@ module DatapathSingleCycle (
               end
             if (rs1_data[31]==1)
               begin
-                i_dividend=~(rs1_data-1);
+                i_dividend=~(rs1_data)+1;
               end
             else
               begin
