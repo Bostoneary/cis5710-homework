@@ -298,6 +298,7 @@ module DatapathSingleCycle (
     i_dividend=0;
     i_divisor=1;
     test_divisor = 0;
+    store_we_to_dmem=4'b0000;
     // sign_bit=0;
     // logical_shift=0;
     // sign_mask=0;
@@ -565,7 +566,6 @@ module DatapathSingleCycle (
               begin
                 i_dividend=rs1_data;
               end
-            
             if (test_divisor ==0)
               begin
                 rd_data = -1;
@@ -618,7 +618,6 @@ module DatapathSingleCycle (
               begin
                 i_dividend=rs1_data;
               end
-            
             if (test_divisor ==0)
               begin
                 rd_data = rs1_data;
@@ -680,15 +679,19 @@ module DatapathSingleCycle (
           begin
             i_dividend=(rs1_data+imm_i_sext);
             i_divisor=4;
+            we=1'b1;
             case(state)
             CALC_ADDR:
             begin
               addr_to_dmem=o_quotient<<2;
               pcNext=pcCurrent;
-              if (o_remainder == 3) begin
+              if (o_remainder == 3)
+              begin
+                rd_data={{24{load_data_from_dmem[31]}},load_data_from_dmem[31:24]};
                 next_state = LOAD_LOWBYTE;
               end
               else begin
+                rd_data={{16{load_data_from_dmem[o_remainder*8+15]}},load_data_from_dmem[o_remainder*8+:16]};
                 next_state=LOAD_BYTE;
               end
             end
@@ -703,7 +706,7 @@ module DatapathSingleCycle (
             begin
               we=1'b1;
               addr_to_dmem=(o_quotient+1)<<2;
-              rd_data={{24{load_data_from_dmem[31]}},load_data_from_dmem[31:24]};
+              rd_data={{16{load_data_from_dmem[7]}},load_data_from_dmem[7:0],rs1_data[7:0]};
               next_state=LOAD_HIGHBYTE;
               pcNext=pcCurrent;
             end
@@ -724,6 +727,9 @@ module DatapathSingleCycle (
         begin
           i_dividend=(rs1_data+imm_i_sext);
           i_divisor=4;
+          we=1'b1;
+          addr_to_dmem=o_quotient<<2;
+          rd_data=load_data_from_dmem;
             case(state)
             CALC_ADDR:
             begin
@@ -738,7 +744,6 @@ module DatapathSingleCycle (
             end
             LOAD_BYTE:
             begin
-              we=1'b1;
               addr_to_dmem=o_quotient<<2;
               rd_data=load_data_from_dmem;
               next_state=CALC_ADDR;
@@ -801,6 +806,7 @@ module DatapathSingleCycle (
         begin
             i_dividend=(rs1_data+imm_i_sext);
             i_divisor=4;
+            we=1'b1;
             case(state)
             CALC_ADDR:
             begin
@@ -808,9 +814,11 @@ module DatapathSingleCycle (
               pcNext=pcCurrent;
               if (o_remainder == 3) begin
                 next_state = LOAD_LOWBYTE;
+                rd_data={24'b0,load_data_from_dmem[31:24]};
               end
               else begin
                 next_state=LOAD_BYTE;
+                rd_data={16'b0,load_data_from_dmem[o_remainder*8+:16]};
               end
             end
             LOAD_BYTE:
@@ -824,7 +832,7 @@ module DatapathSingleCycle (
             begin
               we=1'b1;
               addr_to_dmem=(o_quotient+1)<<2;
-              rd_data={24'b0,load_data_from_dmem[31:24]};
+              rd_data={16'b0,load_data_from_dmem[7:0],rs1_data[7:0]};
               next_state=LOAD_HIGHBYTE;
               pcNext=pcCurrent;
             end
@@ -1014,6 +1022,13 @@ module DatapathSingleCycle (
           // begin
           //   pcNext=pcCurrent+4;
           // end
+        end
+      end
+      OpMiscMem:
+      begin
+        if(insn_fence)
+        begin
+          pcNext=pcCurrent+4;
         end
       end
       OpEnviron:
